@@ -1,7 +1,10 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
-const api = {}
+const api = {
+  ping: () => ipcRenderer.send('ping'),
+  printOrder: (order: never) => ipcRenderer.send('print-order', order)
+}
 
 if (process.contextIsolated) {
   try {
