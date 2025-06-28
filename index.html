@@ -1,0 +1,105 @@
+<html>
+  <head>
+    <style>
+      body {
+        font-family: monospace;
+        font-size: 10px;
+        width: 80mm;
+        margin: 0;
+        padding: 5mm;
+        box-sizing: border-box;
+      }
+      .header,
+      .footer {
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      .item-list {
+        margin-top: 10px;
+        margin-bottom: 10px;
+      }
+      .item {
+        display: flex;
+        justify-content: space-between;
+      }
+      .item-name {
+        flex-grow: 1;
+        margin-right: 5px;
+      }
+      .total {
+        font-weight: bold;
+        font-size: 12px;
+      }
+      .separator {
+        border-top: 1px dashed #000;
+        margin: 5px 0;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 10px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 2px 0;
+      }
+      th {
+        font-weight: bold;
+        border-bottom: 1px solid #000;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">Cliente</div>
+    <div>Nome: Yan César</div>
+    <div>Endereço: Rua santo expedito, 128, São Vicente , Condeúba - Bahia - 46200-000</div>
+    <div>Data hora: 28/06/2025 12:24</div>
+    <div class="separator"></div>
+    <div class="header">Produtos</div>
+    <table>
+      <col style="width: 50%" />
+      <col style="width: 10%" />
+      <col style="width: 20%" />
+      <col style="width: 20%" />
+      <tr>
+        <th>Item</th>
+        <th>Qt</th>
+        <th>Unit</th>
+        <th>Total</th>
+      </tr>
+      <tr>
+        <td>BOLINHO DE SALMÃO</td>
+        <td>1x</td>
+        <td>20,00</td>
+        <td>20,00</td>
+      </tr>
+      <tr>
+        <td>CAMARÃO EMPANADO COM MOLHO AGRIDOCE</td>
+        <td>1x</td>
+        <td>20,00</td>
+        <td>20,00</td>
+      </tr>
+      <tr>
+        <td>BARCA COM 60 PEÇAS</td>
+        <td>1x</td>
+        <td>210,00</td>
+        <td>210,00</td>
+      </tr>
+      <tr>
+        <td>PICANHA NA PEDRA</td>
+        <td>1x</td>
+        <td>60,00</td>
+        <td>60,00</td>
+      </tr>
+    </table>
+    <div class="separator"></div>
+    <div class="header">Resumo do Pedido</div>
+    <div>Quantidade de items: 4</div>
+    <div>Subtotal: R$ 310,00</div>
+    <div>Taxa de entrega: R$ 1,00</div>
+    <div>Valor total: R$ 311,00</div>
+    <div class="separator"></div>
+    <div>Obrigado pela compra!</div>
+  </body>
+</html>

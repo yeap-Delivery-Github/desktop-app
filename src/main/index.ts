@@ -1,7 +1,8 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import path, { join } from 'path'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
-import { PosPrinter } from 'electron-pos-printer'
+import { OrderTemplate } from '../print'
+import { Order } from '../types'
 
 function createWindow(): void {
   const linuxIcon = join(__dirname, '../../build/icon.png')
@@ -44,7 +45,6 @@ function createWindow(): void {
     return { action: 'deny' }
   })
 
-  // mainWindow.loadURL('https://portal.yeapdelivery.com.br')
   mainWindow.loadURL('http://localhost:3000')
 }
 
@@ -57,62 +57,57 @@ app.whenReady().then(() => {
 
   ipcMain.on('ping', () => console.log('pong'))
 
-  ipcMain.on('print-order', async (event, order) => {
-    const data = [
-      {
-        type: 'text',
-        value: 'YEAP DELIVERY',
-        style: 'text-align:center;font-weight:bold;font-size:18px;'
-      },
-      {
-        type: 'text',
-        value: '------------------------------------------',
-        style: 'text-align:center;'
-      },
-      {
-        type: 'text',
-        value: `Cliente: ${order.userName}`,
-        style: 'font-size:14px;'
-      },
-      {
-        type: 'text',
-        value: `Pedido: ${order.orderNumber}`,
-        style: 'font-size:14px;'
-      },
-      {
-        type: 'text',
-        value: `Total: R$ ${order.totalPrice.toFixed(2)}`,
-        style: 'font-size:14px;'
-      },
-      {
-        type: 'text',
-        value: `Endereço: ${order.userAddress?.street ?? ''}`,
-        style: 'font-size:14px;'
-      },
-      {
-        type: 'text',
-        value: '------------------------------------------',
-        style: 'text-align:center;'
-      },
-      {
-        type: 'text',
-        value: 'Obrigado pela preferência!',
-        style: 'text-align:center;font-size:14px;'
-      }
-    ]
-
+  ipcMain.on('print-order', async (event, order: Order) => {
     try {
-      await PosPrinter.print(data, {
-        printerName: 'MP-4200HS', // use '' para padrão, ou o nome da impressora
-        width: '80mm',
-        margins: { top: 10, bottom: 10, left: 10, right: 10 },
-        preview: false,
-        silent: true,
-        timeOutPerLine: 400,
-        pageSize: '80mm'
-      })
+      const templateOrder = new OrderTemplate(order)
+
+      const couponHtml = templateOrder.execute()
+      console.log(couponHtml)
+
+      // const printWindow = new BrowserWindow({
+      //   show: false,
+      //   webPreferences: {
+      //     nodeIntegration: false,
+      //     contextIsolation: true
+      //   }
+      // })
+
+      // printWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(couponHtml)}`)
+
+      // printWindow.webContents.on('did-finish-load', async () => {
+      //   try {
+      //     const printers = await printWindow.webContents.getPrintersAsync()
+
+      //     const targetPrinter = printers.find((p) => p.name === 'MP-4200 TH (Copiar 1)')
+
+      //     if (!targetPrinter) {
+      //       console.error('Erro: Impressora "MP-4200 TH (Copiar 1)" não encontrada.')
+
+      //       event.sender.send('print-status', {
+      //         success: false,
+      //         error: 'Impressora não encontrada ou nome incorreto.'
+      //       })
+      //       printWindow.close()
+      //       return
+      //     }
+
+      //     await printWindow.webContents.print({
+      //       silent: true,
+      //       printBackground: true,
+      //       deviceName: targetPrinter.name
+      //     })
+
+      //     console.log('Cupom impresso com sucesso usando webContents.print()!')
+      //   } catch (printError) {
+      //     console.error('Erro ao imprimir com webContents.print():', printError)
+      //   } finally {
+      //     setTimeout(() => {
+      //       printWindow.close()
+      //     }, 1000)
+      //   }
+      // })
     } catch (error) {
-      console.error('Erro ao imprimir:', error)
+      console.error('Erro geral no processo de impressão (construção HTML/janela):', error)
     }
   })
 
