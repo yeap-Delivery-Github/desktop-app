@@ -8,7 +8,6 @@
         margin: 0;
         padding: 5mm;
         box-sizing: border-box;
-        margin-left: -10mm;
       }
       .header,
       .footer {
@@ -35,6 +34,9 @@
         border-top: 1px dashed #000;
         margin: 5px 0;
       }
+      .line {
+        margin-bottom: 5px;
+      }
       table {
         width: 100%;
         border-collapse: collapse;
@@ -49,13 +51,20 @@
         font-weight: bold;
         border-bottom: 1px solid #000;
       }
+      tr {
+        margin-top: 5px;
+      }
     </style>
   </head>
   <body>
     <div class="header">Cliente</div>
-    <div>Nome: Yan César</div>
-    <div>Endereço: Rua santo expedito, 128, São Vicente , Condeúba - Bahia - 46200-000</div>
-    <div>Data hora: 28/06/2025 12:24</div>
+    <div class="line">Nome: Yan Cesar</div>
+    <div class="line">Data hora: 07/04/2025 19:11</div>
+    <div class="line">Rua: Rua santo expedito</div>
+    <div class="line">Bairro: Rua santo expedito</div>
+    <div class="line">Numero: 1215</div>
+    <div class="line">Complemento: N/A</div>
+    <div class="line">CEP: 46200000</div>
     <div class="separator"></div>
     <div class="header">Produtos</div>
     <table>
@@ -70,37 +79,22 @@
         <th>Total</th>
       </tr>
       <tr>
-        <td>BOLINHO DE SALMÃO</td>
-        <td>1x</td>
-        <td>20,00</td>
-        <td>20,00</td>
-      </tr>
-      <tr>
-        <td>CAMARÃO EMPANADO COM MOLHO AGRIDOCE</td>
-        <td>1x</td>
-        <td>20,00</td>
-        <td>20,00</td>
-      </tr>
-      <tr>
-        <td>BARCA COM 60 PEÇAS</td>
-        <td>1x</td>
-        <td>210,00</td>
-        <td>210,00</td>
-      </tr>
-      <tr>
-        <td>PICANHA NA PEDRA</td>
-        <td>1x</td>
-        <td>60,00</td>
-        <td>60,00</td>
+        <td>Lombo canadense c/ cream cheese</td>
+        <td>1</td>
+        <td>22,22</td>
+        <td>22,22</td>
       </tr>
     </table>
     <div class="separator"></div>
     <div class="header">Resumo do Pedido</div>
-    <div>Quantidade de items: 4</div>
-    <div>Subtotal: R$ 310,00</div>
-    <div>Taxa de entrega: R$ 1,00</div>
-    <div>Valor total: R$ 311,00</div>
+    <div class="line">Quantidade de items: 1</div>
+    <div class="line">Forma de pagamento: Cartao de debito</div>
+    <div class="line"></div>
+    <div class="line">Subtotal: 20,22</div>
+    <div class="line">Taxa de entrega: 2,00</div>
+    <div class="line">Valor total: 22,22</div>
     <div class="separator"></div>
-    <div>Obrigado pela compra!</div>
+    <div class="line">Obrigado pela preferencia!</div>
+    <div class="line">Impresso por: Yeap delivery - yeapdelivery.com.br</div>
   </body>
 </html>

@@ -1,3 +1,5 @@
+import { removeAccents } from '../utils'
+
 export class TemplatePrint {
   private content: string = ''
 
@@ -39,6 +41,9 @@ export class TemplatePrint {
               border-top: 1px dashed #000;
               margin: 5px 0;
             }
+            .line {
+              margin-bottom: 5px;
+            }
             table {
               width: 100%;
               border-collapse: collapse;
@@ -52,6 +57,9 @@ export class TemplatePrint {
               font-weight: bold;
               border-bottom: 1px solid #000;
             }
+            tr {
+              margin-top: 5px;
+            }
           </style>
         </head>
         <body>
@@ -62,12 +70,12 @@ export class TemplatePrint {
   }
 
   title(text: string): string {
-    this.content += `<div class="header">${text}</div>\n`
+    this.content += `<div class="header">${removeAccents(text)}</div>\n`
     return this.content
   }
 
   line(text: string): this {
-    this.content += `<div>${text}</div>\n`
+    this.content += `<div class="line">${removeAccents(text)}</div>\n`
     return this
   }
 

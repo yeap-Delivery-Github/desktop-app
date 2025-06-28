@@ -1,12 +1,6 @@
-import { DeliveryType } from '../../enums'
+import { DeliveryType, paymentMethodsMap } from '../../enums'
 import { Order } from '../../types'
-import {
-  currency,
-  currencyWithSymbol,
-  formatAddress,
-  formatDateWithHour,
-  getPrice
-} from '../../utils'
+import { currencyWithSymbol, formatDateWithHour, getPrice } from '../../utils'
 import { TemplatePrint } from '../template-print'
 
 export class OrderTemplate extends TemplatePrint {
@@ -21,14 +15,19 @@ export class OrderTemplate extends TemplatePrint {
     this.title('Cliente')
     this.line(`Nome: ${this.order.userName}`)
 
-    if (this.order.deliveryType === DeliveryType.DELIVERY) {
-      this.line(`Endereço: ${formatAddress(this.order.userAddress)}`)
-    }
     this.line(`Data hora: ${formatDateWithHour(this.order.createdAt)}`)
 
     if (this.order.observation) {
       this.separator()
       this.line(`Observação: ${this.order.observation}`)
+    }
+
+    if (this.order.deliveryType === DeliveryType.DELIVERY) {
+      this.line(`Rua: ${this.order.userAddress.street}`)
+      this.line(`Bairro: ${this.order.userAddress.street}`)
+      this.line(`Número: ${this.order.userAddress.number}`)
+      this.line(`Complemento: ${this.order.userAddress.complement || 'N/A'}`)
+      this.line(`CEP: ${this.order.userAddress.zip}`)
     }
   }
 
@@ -37,7 +36,7 @@ export class OrderTemplate extends TemplatePrint {
     const headers = ['Item', 'Qt', 'Unit', 'Total']
     const rows = this.order.products.map((product) => [
       product.name,
-      `${product.quantity.toString()}x`,
+      product.quantity.toString(),
       currencyWithSymbol(getPrice(product.price)),
       currencyWithSymbol(getPrice(product.price) * product.quantity)
     ])
@@ -47,17 +46,21 @@ export class OrderTemplate extends TemplatePrint {
   footerOrder(): void {
     this.title('Resumo do Pedido')
     this.line('Quantidade de items: ' + this.order.products.length)
+    this.line(`Forma de pagamento: ${paymentMethodsMap[this.order.paymentType]}`)
+    this.line(' ')
+
     this.line(
-      `Subtotal: ${currency(this.order.totalPrice - Number(this.order.deliveryPrice || 0))}`
+      `Subtotal: ${currencyWithSymbol(this.order.totalPrice - Number(this.order.deliveryPrice || 0))}`
     )
 
     if (this.order.deliveryType === DeliveryType.DELIVERY) {
-      this.line(`Taxa de entrega: ${currency(Number(this.order.deliveryPrice || 0))}`)
+      this.line(`Taxa de entrega: ${currencyWithSymbol(Number(this.order.deliveryPrice || 0))}`)
     }
-    this.line(`Valor total: ${currency(this.order.totalPrice)}`)
+    this.line(`Valor total: ${currencyWithSymbol(this.order.totalPrice)}`)
 
     this.separator()
-    this.line('Obrigado pela compra!')
+    this.line('Obrigado pela preferência!')
+    this.line('Impresso por: Yeap delivery - yeapdelivery.com.br')
   }
 
   execute(): string {
