@@ -3,7 +3,8 @@ import { electronAPI } from '@electron-toolkit/preload'
 
 const api = {
   ping: () => ipcRenderer.send('ping'),
-  printOrder: (order: never) => ipcRenderer.send('print-order', order)
+  printOrder: (order: never) => ipcRenderer.send('print-order', order),
+  getPrinters: () => ipcRenderer.invoke('get-printers')
 }
 
 if (process.contextIsolated) {

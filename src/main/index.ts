@@ -57,13 +57,11 @@ app.whenReady().then(() => {
 
   ipcMain.on('ping', () => console.log('pong'))
 
-  ipcMain.on('print-order', async (event, order: Order) => {
+  ipcMain.on('print-order', async (event, order: Order, printerName: string) => {
     try {
       const templateOrder = new OrderTemplate(order)
 
       const couponHtml = templateOrder.execute()
-
-      console.log('HTML do cupom gerado:', couponHtml)
 
       const printWindow = new BrowserWindow({
         show: false,
@@ -79,10 +77,10 @@ app.whenReady().then(() => {
         try {
           const printers = await printWindow.webContents.getPrintersAsync()
 
-          const targetPrinter = printers.find((p) => p.name === 'MP-4200 TH (Copiar 1)')
+          const targetPrinter = printers.find((p) => p.name === printerName)
 
           if (!targetPrinter) {
-            console.error('Erro: Impressora "MP-4200 TH (Copiar 1)" não encontrada.')
+            console.error(`Erro: Impressora ${printerName} não encontrada.`)
 
             event.sender.send('print-status', {
               success: false,
@@ -115,6 +113,30 @@ app.whenReady().then(() => {
     }
   })
 
+  ipcMain.handle('get-printers', async () => {
+    return new Promise<string[]>((resolve, reject) => {
+      const printerWindow = new BrowserWindow({
+        show: false,
+        webPreferences: {
+          nodeIntegration: false,
+          contextIsolation: true
+        }
+      })
+
+      printerWindow.webContents.once('did-finish-load', async () => {
+        try {
+          const printers = await printerWindow.webContents.getPrintersAsync()
+          resolve(printers.map((p) => p.name))
+        } catch (error) {
+          reject(error)
+        } finally {
+          printerWindow.close()
+        }
+      })
+
+      printerWindow.loadURL('about:blank')
+    })
+  })
   createWindow()
 
   app.on('activate', function () {
