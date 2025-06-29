@@ -37,15 +37,16 @@ export class OrderTemplate extends TemplatePrint {
       this.line(
         `${product.quantity}x - ${removeAccents(product.name)} - ${currencyWithSymbol(
           getPrice(product.price)
-        )}`
+        )}`,
+        true
       )
       if (product.variations.length) {
         product.variations.forEach((variation) => {
-          this.line(`  - ${removeAccents(variation.name)}: `)
+          this.line(`- ${removeAccents(variation.name)}: `)
 
           variation.options.forEach((option) => {
             this.line(
-              `    ${option.quantity} - ${removeAccents(option.name)}: ${currencyWithSymbol(option.price)}`
+              `${option.quantity} - ${removeAccents(option.name)}: ${currencyWithSymbol(option.price)}`
             )
           })
         })

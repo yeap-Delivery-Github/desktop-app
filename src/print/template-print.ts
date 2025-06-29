@@ -74,8 +74,9 @@ export class TemplatePrint {
     return this.content
   }
 
-  line(text: string): this {
-    this.content += `<div class="line">${removeAccents(text)}</div>\n`
+  line(text: string, bold: boolean = false): this {
+    const style = bold ? 'font-weight: bold;' : ''
+    this.content += `<div class="line" style="${style}">${removeAccents(text)}</div>\n`
     return this
   }
 
