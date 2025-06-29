@@ -1,6 +1,12 @@
 import { DeliveryType, paymentMethodsMap } from '../../enums'
 import { Order } from '../../types'
-import { currencyWithSymbol, formatDateWithHour, getPrice, removeAccents } from '../../utils'
+import {
+  currencyWithSymbol,
+  formatDateWithHour,
+  formatOrderNumber,
+  getPrice,
+  removeAccents
+} from '../../utils'
 import { TemplatePrint } from '../template-print'
 
 export class OrderTemplate extends TemplatePrint {
@@ -12,9 +18,9 @@ export class OrderTemplate extends TemplatePrint {
   }
 
   header(): void {
-    this.title('Cliente')
+    this.title('Informações do Pedido')
+    this.line(`Pedido: ${formatOrderNumber(this.order.orderNumber)}`)
     this.line(`Nome: ${this.order.userName}`)
-
     this.line(`Data hora: ${formatDateWithHour(this.order.createdAt)}`)
 
     if (this.order.observation) {
