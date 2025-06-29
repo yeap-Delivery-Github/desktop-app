@@ -53,7 +53,7 @@ export class OrderTemplate extends TemplatePrint {
 
           variation.options.forEach((option) => {
             this.line(
-              `${option.quantity} - ${removeAccents(option.name)}: ${currencyWithSymbol(option.price)}`,
+              `${option.quantity}x - ${removeAccents(option.name)}: ${currencyWithSymbol(option.price)}`,
               12
             )
           })
