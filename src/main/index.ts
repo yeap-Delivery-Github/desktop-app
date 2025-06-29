@@ -57,61 +57,64 @@ app.whenReady().then(() => {
 
   ipcMain.on('ping', () => console.log('pong'))
 
-  ipcMain.on('print-order', async (event, order: Order, printerName: string) => {
-    try {
-      const templateOrder = new OrderTemplate(order)
+  ipcMain.on(
+    'print-order',
+    async (event, { order, printerName }: { order: Order; printerName: string }) => {
+      try {
+        const templateOrder = new OrderTemplate(order)
 
-      const couponHtml = templateOrder.execute()
+        const couponHtml = templateOrder.execute()
 
-      const printWindow = new BrowserWindow({
-        show: false,
-        webPreferences: {
-          nodeIntegration: false,
-          contextIsolation: true
-        }
-      })
-
-      printWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(couponHtml)}`)
-
-      printWindow.webContents.on('did-finish-load', async () => {
-        try {
-          const printers = await printWindow.webContents.getPrintersAsync()
-
-          const targetPrinter = printers.find((p) => p.name === printerName)
-
-          if (!targetPrinter) {
-            console.error(`Erro: Impressora ${printerName} não encontrada.`)
-
-            event.sender.send('print-status', {
-              success: false,
-              error: 'Impressora não encontrada ou nome incorreto.'
-            })
-            printWindow.close()
-            return
+        const printWindow = new BrowserWindow({
+          show: false,
+          webPreferences: {
+            nodeIntegration: false,
+            contextIsolation: true
           }
+        })
 
-          printWindow.webContents.print({
-            silent: true,
-            printBackground: true,
-            deviceName: targetPrinter.name,
-            margins: {
-              marginType: 'none'
+        printWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(couponHtml)}`)
+
+        printWindow.webContents.on('did-finish-load', async () => {
+          try {
+            const printers = await printWindow.webContents.getPrintersAsync()
+
+            const targetPrinter = printers.find((p) => p.name === printerName)
+
+            if (!targetPrinter) {
+              console.error(`Erro: Impressora ${printerName} não encontrada.`)
+
+              event.sender.send('print-status', {
+                success: false,
+                error: 'Impressora não encontrada ou nome incorreto.'
+              })
+              printWindow.close()
+              return
             }
-          })
 
-          console.log('Cupom impresso com sucesso usando webContents.print()!')
-        } catch (printError) {
-          console.error('Erro ao imprimir com webContents.print():', printError)
-        } finally {
-          setTimeout(() => {
-            printWindow.close()
-          }, 1000)
-        }
-      })
-    } catch (error) {
-      console.error('Erro geral no processo de impressão (construção HTML/janela):', error)
+            printWindow.webContents.print({
+              silent: true,
+              printBackground: true,
+              deviceName: targetPrinter.name,
+              margins: {
+                marginType: 'none'
+              }
+            })
+
+            console.log('Cupom impresso com sucesso usando webContents.print()!')
+          } catch (printError) {
+            console.error('Erro ao imprimir com webContents.print():', printError)
+          } finally {
+            setTimeout(() => {
+              printWindow.close()
+            }, 1000)
+          }
+        })
+      } catch (error) {
+        console.error('Erro geral no processo de impressão (construção HTML/janela):', error)
+      }
     }
-  })
+  )
 
   ipcMain.handle('get-printers', async () => {
     return new Promise<string[]>((resolve, reject) => {
