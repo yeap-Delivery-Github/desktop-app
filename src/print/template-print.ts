@@ -10,7 +10,7 @@ export class TemplatePrint {
           <style>
             body {
               font-family: monospace;
-              font-size: 10px;
+              font-size: 14px;
               width: 80mm;
               margin: 0;
               padding: 5mm;

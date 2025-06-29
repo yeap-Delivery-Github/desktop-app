@@ -1,6 +1,6 @@
 import { DeliveryType, paymentMethodsMap } from '../../enums'
 import { Order } from '../../types'
-import { currencyWithSymbol, formatDateWithHour, getPrice } from '../../utils'
+import { currencyWithSymbol, formatDateWithHour, getPrice, removeAccents } from '../../utils'
 import { TemplatePrint } from '../template-print'
 
 export class OrderTemplate extends TemplatePrint {
@@ -24,7 +24,7 @@ export class OrderTemplate extends TemplatePrint {
 
     if (this.order.deliveryType === DeliveryType.DELIVERY) {
       this.line(`Rua: ${this.order.userAddress.street}`)
-      this.line(`Bairro: ${this.order.userAddress.street}`)
+      this.line(`Bairro: ${this.order.userAddress.neighborhood}`)
       this.line(`Número: ${this.order.userAddress.number}`)
       this.line(`Complemento: ${this.order.userAddress.complement || 'N/A'}`)
       this.line(`CEP: ${this.order.userAddress.zip}`)
@@ -33,14 +33,24 @@ export class OrderTemplate extends TemplatePrint {
 
   products(): void {
     this.title('Produtos')
-    const headers = ['Item', 'Qt', 'Unit', 'Total']
-    const rows = this.order.products.map((product) => [
-      product.name,
-      product.quantity.toString(),
-      currencyWithSymbol(getPrice(product.price)),
-      currencyWithSymbol(getPrice(product.price) * product.quantity)
-    ])
-    this.table(headers, rows, ['50%', '10%', '20%', '20%'])
+    this.order.products.forEach((product) => {
+      this.line(
+        `${product.quantity}x - ${removeAccents(product.name)} - ${currencyWithSymbol(
+          getPrice(product.price)
+        )}`
+      )
+      if (product.variations.length) {
+        product.variations.forEach((variation) => {
+          this.line(`  - ${removeAccents(variation.name)}: `)
+
+          variation.options.forEach((option) => {
+            this.line(
+              `    ${option.quantity} - ${removeAccents(option.name)}: ${currencyWithSymbol(option.price)}`
+            )
+          })
+        })
+      }
+    })
   }
 
   footerOrder(): void {
