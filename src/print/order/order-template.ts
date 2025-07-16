@@ -62,19 +62,30 @@ export class OrderTemplate extends TemplatePrint {
     })
   }
 
+  buildSubtotal(): number {
+    if (this.order.discount) {
+      return this.order.totalPrice + Number(this.order.discount || 0)
+    }
+
+    return this.order.totalPrice - Number(this.order.deliveryPrice || 0)
+  }
+
   footerOrder(): void {
     this.title('Resumo do Pedido')
     this.line('Quantidade de items: ' + this.order.products.length)
     this.line(`Forma de pagamento: ${paymentMethodsMap[this.order.paymentType]}`)
     this.line(' ')
 
-    this.line(
-      `Subtotal: ${currencyWithSymbol(this.order.totalPrice - Number(this.order.deliveryPrice || 0))}`
-    )
+    this.line(`Subtotal: ${currencyWithSymbol(this.buildSubtotal())}`)
 
     if (this.order.deliveryType === DeliveryType.DELIVERY) {
       this.line(`Taxa de entrega: ${currencyWithSymbol(Number(this.order.deliveryPrice || 0))}`)
     }
+
+    if (this.order.discount) {
+      this.line(`Desconto: -${currencyWithSymbol(this.order.discount)}`)
+    }
+
     this.line(`Valor total: ${currencyWithSymbol(this.order.totalPrice)}`)
 
     this.separator()

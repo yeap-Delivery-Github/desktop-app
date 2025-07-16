@@ -13,6 +13,7 @@ export interface Address {
 }
 
 export interface Order {
+  id: string
   orderNumber: number
   totalPrice: number
   status: string
@@ -29,7 +30,9 @@ export interface Order {
   paymentType: PaymentType
   createdAt: string
   updatedAt: string
-  id: string
+  couponCode?: string
+  couponValue?: number
+  discount?: number
 }
 
 export interface Product {
