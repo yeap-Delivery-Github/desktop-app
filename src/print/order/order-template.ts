@@ -17,10 +17,32 @@ export class OrderTemplate extends TemplatePrint {
     this.order = order
   }
 
+  resolveSubtotal(): number {
+    if (this.order.discount) {
+      return this.order.totalPrice + Number(this.order.discount || 0)
+    }
+
+    return this.order.totalPrice - Number(this.order.deliveryPrice || 0)
+  }
+
+  resolveName(): string {
+    const fistNameArray = this.order.userName?.split(' ')
+
+    if (fistNameArray && fistNameArray.length === 1) {
+      return fistNameArray[0]
+    }
+
+    if (fistNameArray && fistNameArray.length > 1) {
+      return fistNameArray[0] + ' ' + fistNameArray[1]
+    }
+
+    return this.order.userName || 'Cliente'
+  }
+
   header(): void {
     this.title('Informações do Pedido')
     this.line(`Pedido: ${formatOrderNumber(this.order.orderNumber)}`)
-    this.line(`Nome: ${this.order.userName}`)
+    this.line(`Nome: ${this.resolveName()}`)
     this.line(`Data hora: ${formatDateWithHour(this.order.createdAt)}`)
 
     if (this.order.observation) {
@@ -62,21 +84,13 @@ export class OrderTemplate extends TemplatePrint {
     })
   }
 
-  buildSubtotal(): number {
-    if (this.order.discount) {
-      return this.order.totalPrice + Number(this.order.discount || 0)
-    }
-
-    return this.order.totalPrice - Number(this.order.deliveryPrice || 0)
-  }
-
   footerOrder(): void {
     this.title('Resumo do Pedido')
     this.line('Quantidade de items: ' + this.order.products.length)
     this.line(`Forma de pagamento: ${paymentMethodsMap[this.order.paymentType]}`)
     this.line(' ')
 
-    this.line(`Subtotal: ${currencyWithSymbol(this.buildSubtotal())}`)
+    this.line(`Subtotal: ${currencyWithSymbol(this.resolveSubtotal())}`)
 
     if (this.order.deliveryType === DeliveryType.DELIVERY) {
       this.line(`Taxa de entrega: ${currencyWithSymbol(Number(this.order.deliveryPrice || 0))}`)
