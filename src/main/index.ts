@@ -65,51 +65,53 @@ app.whenReady().then(() => {
 
         const couponHtml = templateOrder.execute()
 
-        const printWindow = new BrowserWindow({
-          show: false,
-          webPreferences: {
-            nodeIntegration: false,
-            contextIsolation: true
-          }
-        })
+        console.log(couponHtml)
 
-        printWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(couponHtml)}`)
+        // const printWindow = new BrowserWindow({
+        //   show: false,
+        //   webPreferences: {
+        //     nodeIntegration: false,
+        //     contextIsolation: true
+        //   }
+        // })
 
-        printWindow.webContents.on('did-finish-load', async () => {
-          try {
-            const printers = await printWindow.webContents.getPrintersAsync()
+        // printWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(couponHtml)}`)
 
-            const targetPrinter = printers.find((p) => p.name === printerName)
+        // printWindow.webContents.on('did-finish-load', async () => {
+        //   try {
+        //     const printers = await printWindow.webContents.getPrintersAsync()
 
-            if (!targetPrinter) {
-              console.error(`Erro: Impressora ${printerName} não encontrada.`)
+        //     const targetPrinter = printers.find((p) => p.name === printerName)
 
-              event.sender.send('print-status', {
-                success: false,
-                error: 'Impressora não encontrada ou nome incorreto.'
-              })
-              printWindow.close()
-              return
-            }
+        //     if (!targetPrinter) {
+        //       console.error(`Erro: Impressora ${printerName} não encontrada.`)
 
-            printWindow.webContents.print({
-              silent: true,
-              printBackground: true,
-              deviceName: targetPrinter.name,
-              margins: {
-                marginType: 'none'
-              }
-            })
+        //       event.sender.send('print-status', {
+        //         success: false,
+        //         error: 'Impressora não encontrada ou nome incorreto.'
+        //       })
+        //       printWindow.close()
+        //       return
+        //     }
 
-            console.log('Cupom impresso com sucesso usando webContents.print()!')
-          } catch (printError) {
-            console.error('Erro ao imprimir com webContents.print():', printError)
-          } finally {
-            setTimeout(() => {
-              printWindow.close()
-            }, 1000)
-          }
-        })
+        //     printWindow.webContents.print({
+        //       silent: true,
+        //       printBackground: true,
+        //       deviceName: targetPrinter.name,
+        //       margins: {
+        //         marginType: 'none'
+        //       }
+        //     })
+
+        //     console.log('Cupom impresso com sucesso usando webContents.print()!')
+        //   } catch (printError) {
+        //     console.error('Erro ao imprimir com webContents.print():', printError)
+        //   } finally {
+        //     setTimeout(() => {
+        //       printWindow.close()
+        //     }, 1000)
+        //   }
+        // })
       } catch (error) {
         console.error('Erro geral no processo de impressão (construção HTML/janela):', error)
       }

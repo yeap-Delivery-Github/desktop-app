@@ -69,6 +69,11 @@ export class TemplatePrint {
     `
   }
 
+  image(url: string): string {
+    this.content += `<img src="${url}" alt="Image" style="width: 40mm; height: auto; margin-bottom: 10px;">\n`
+    return this.content
+  }
+
   title(text: string): string {
     this.content += `<div class="header">${removeAccents(text)}</div>\n`
     return this.content
