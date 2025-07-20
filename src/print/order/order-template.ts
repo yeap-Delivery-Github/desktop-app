@@ -41,7 +41,7 @@ export class OrderTemplate extends TemplatePrint {
   }
 
   header(): void {
-    this.image('../../../resources/logo.png')
+    // this.image('../../../resources/logo.png')
     this.title('Informações do Pedido')
 
     this.line(`Pedido: ${formatOrderNumber(this.order.orderNumber)}`)
