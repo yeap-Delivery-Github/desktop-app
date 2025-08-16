@@ -9,7 +9,7 @@ export function currency(value: number): string {
   })
 }
 
-export function currencyWithSymbol(value: number): string {
+export function currencyWithOutSymbol(value: number): string {
   if (typeof value !== 'number') {
     return ''
   }

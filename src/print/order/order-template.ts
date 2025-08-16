@@ -1,8 +1,7 @@
-import { join } from 'path'
 import { DeliveryType, paymentMethodsMap } from '../../enums'
 import { Order } from '../../types'
 import {
-  currencyWithSymbol,
+  currencyWithOutSymbol,
   formatDateWithHour,
   formatOrderNumber,
   getPrice,
@@ -20,7 +19,14 @@ export class OrderTemplate extends TemplatePrint {
 
   resolveSubtotal(): number {
     if (this.order.discount) {
-      return this.order.totalPrice + Number(this.order.discount || 0)
+      if (this.order.serviceTax && this.order.serviceTax > 0) {
+        return this.order.totalPrice + Number(this.order.discount) - Number(this.order.serviceTax)
+      }
+      return this.order.totalPrice + Number(this.order.couponValue || 0)
+    }
+
+    if (this.order.serviceTax && this.order.serviceTax > 0) {
+      return this.order.totalPrice - this.order.serviceTax - Number(this.order.deliveryPrice || 0)
     }
 
     return this.order.totalPrice - Number(this.order.deliveryPrice || 0)
@@ -66,7 +72,7 @@ export class OrderTemplate extends TemplatePrint {
     this.title('Produtos')
     this.order.products.forEach((product) => {
       this.line(
-        `${product.quantity}x - ${removeAccents(product.name)} - ${currencyWithSymbol(
+        `${product.quantity}x - ${removeAccents(product.name)} - ${currencyWithOutSymbol(
           getPrice(product.price)
         )}`,
         14,
@@ -78,7 +84,7 @@ export class OrderTemplate extends TemplatePrint {
 
           variation.options.forEach((option) => {
             this.line(
-              `${option.quantity}x - ${removeAccents(option.name)}: ${currencyWithSymbol(option.price)}`,
+              `${option.quantity}x - ${removeAccents(option.name)}: ${currencyWithOutSymbol(option.price)}`,
               12
             )
           })
@@ -93,17 +99,21 @@ export class OrderTemplate extends TemplatePrint {
     this.line(`Forma de pagamento: ${paymentMethodsMap[this.order.paymentType]}`)
     this.line(' ')
 
-    this.line(`Subtotal: ${currencyWithSymbol(this.resolveSubtotal())}`)
+    this.line(`Subtotal: ${currencyWithOutSymbol(this.resolveSubtotal())}`)
 
     if (this.order.deliveryType === DeliveryType.DELIVERY) {
-      this.line(`Taxa de entrega: ${currencyWithSymbol(Number(this.order.deliveryPrice || 0))}`)
+      this.line(`Taxa de entrega: ${currencyWithOutSymbol(Number(this.order.deliveryPrice || 0))}`)
+    }
+
+    if (this.order.serviceTax) {
+      this.line(`Taxa de serviço: ${currencyWithOutSymbol(this.order.serviceTax)}`)
     }
 
     if (this.order.discount) {
-      this.line(`Desconto: -${currencyWithSymbol(this.order.discount)}`)
+      this.line(`Desconto: -${currencyWithOutSymbol(this.order.discount)}`)
     }
 
-    this.line(`Valor total: ${currencyWithSymbol(this.order.totalPrice)}`)
+    this.line(`Valor total: ${currencyWithOutSymbol(this.order.totalPrice)}`)
 
     this.separator()
     this.line('Obrigado pela preferência!')
