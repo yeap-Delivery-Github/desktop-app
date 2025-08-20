@@ -20,9 +20,18 @@ export class OrderTemplate extends TemplatePrint {
   resolveSubtotal(): number {
     if (this.order.discount) {
       if (this.order.serviceTax && this.order.serviceTax > 0) {
-        return this.order.totalPrice + Number(this.order.discount) - Number(this.order.serviceTax)
+        return (
+          this.order.totalPrice +
+          Number(this.order.discount) -
+          Number(this.order.serviceTax) -
+          Number(this.order.deliveryPrice || 0)
+        )
       }
-      return this.order.totalPrice + Number(this.order.couponValue || 0)
+      return (
+        this.order.totalPrice +
+        Number(this.order.couponValue || 0) -
+        Number(this.order.deliveryPrice || 0)
+      )
     }
 
     if (this.order.serviceTax && this.order.serviceTax > 0) {
