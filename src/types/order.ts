@@ -33,6 +33,7 @@ export interface Order {
   couponCode?: string
   couponValue?: number
   discount?: number
+  serviceTax?: number
 }
 
 export interface Product {
