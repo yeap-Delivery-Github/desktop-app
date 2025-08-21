@@ -18,6 +18,15 @@ export class OrderTemplate extends TemplatePrint {
   }
 
   resolveSubtotal(): number {
+    if (this.order.deliveryType === DeliveryType.PICKUP) {
+      if (this.order.discount) {
+        return (
+          this.order.totalPrice - Number(this.order.serviceTax || 0) + Number(this.order.discount)
+        )
+      }
+      return this.order.totalPrice - Number(this.order.serviceTax || 0)
+    }
+
     if (this.order.discount) {
       if (this.order.serviceTax && this.order.serviceTax > 0) {
         return (
