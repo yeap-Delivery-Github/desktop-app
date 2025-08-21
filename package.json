@@ -1,7 +1,7 @@
 {
   "name": "yeap-delivery",
   "productName": "Yeap Delivery",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Yeap Delivery é uma aplicação de entrega de encomendas.",
   "main": "./out/main/index.js",
   "author": "yeapdelivery.com.br",
