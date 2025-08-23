@@ -4,7 +4,13 @@ import { Order } from '../types'
 
 const api = {
   ping: () => ipcRenderer.send('ping'),
-  printOrder: (order: Order) => ipcRenderer.send('print-order', order),
+  printOrder: (printerEvent: { order: Order; printerName: string; copiesCount: number }) =>
+    ipcRenderer.send(
+      'print-order',
+      printerEvent.order,
+      printerEvent.printerName,
+      printerEvent.copiesCount
+    ),
   getPrinters: () => ipcRenderer.invoke('get-printers')
 }
 

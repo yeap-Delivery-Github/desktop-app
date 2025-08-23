@@ -59,7 +59,14 @@ app.whenReady().then(() => {
 
   ipcMain.on(
     'print-order',
-    async (event, { order, printerName }: { order: Order; printerName: string }) => {
+    async (
+      event,
+      {
+        order,
+        printerName,
+        copiesCount
+      }: { order: Order; printerName: string; copiesCount: number }
+    ) => {
       try {
         const templateOrder = new OrderTemplate(order)
 
@@ -92,14 +99,19 @@ app.whenReady().then(() => {
               return
             }
 
-            printWindow.webContents.print({
-              silent: true,
-              printBackground: true,
-              deviceName: targetPrinter.name,
-              margins: {
-                marginType: 'none'
-              }
-            })
+            let printedCopies = 0
+            while (copiesCount > printedCopies) {
+              printWindow.webContents.print({
+                silent: true,
+                printBackground: true,
+                deviceName: targetPrinter.name,
+                margins: {
+                  marginType: 'none'
+                }
+              })
+
+              printedCopies++
+            }
 
             console.log('Cupom impresso com sucesso usando webContents.print()!')
           } catch (printError) {
