@@ -45,7 +45,7 @@ function createWindow(): void {
     return { action: 'deny' }
   })
 
-  mainWindow.loadURL('https://portal.yeapdelivery.com.br')
+  mainWindow.loadURL('https://test-portal.yeapdelivery.com.br')
 }
 
 app.whenReady().then(() => {
