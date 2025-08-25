@@ -46,8 +46,7 @@ function createWindow(): void {
     return { action: 'deny' }
   })
 
-  mainWindow.loadURL('https://test-portal.yeapdelivery.com.br')
-  // mainWindow.loadURL('http://localhost:3000')
+  mainWindow.loadURL('https://portal.yeapdelivery.com.br')
 }
 
 async function printHtml(html: string, printerName: string): Promise<void> {
