@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import path, { join } from 'path'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
@@ -48,6 +49,50 @@ function createWindow(): void {
   mainWindow.loadURL('https://portal.yeapdelivery.com.br')
 }
 
+async function printHtml(html: string, printerName: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const printWindow = new BrowserWindow({
+      show: false,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true
+      }
+    })
+
+    printWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`)
+
+    printWindow.webContents.once('did-finish-load', async () => {
+      try {
+        const printers = await printWindow.webContents.getPrintersAsync()
+        const targetPrinter = printers.find((p) => p.name === printerName)
+
+        if (!targetPrinter) {
+          reject(new Error(`Impressora ${printerName} não encontrada`))
+          printWindow.close()
+          return
+        }
+
+        printWindow.webContents.print(
+          {
+            silent: true,
+            printBackground: true,
+            deviceName: targetPrinter.name,
+            margins: { marginType: 'none' }
+          },
+          (success) => {
+            printWindow.close()
+            if (!success) return reject(new Error('Falha na impressão'))
+            resolve()
+          }
+        )
+      } catch (err) {
+        reject(err)
+        printWindow.close()
+      }
+    })
+  })
+}
+
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.electron')
 
@@ -59,59 +104,27 @@ app.whenReady().then(() => {
 
   ipcMain.on(
     'print-order',
-    async (event, { order, printerName }: { order: Order; printerName: string }) => {
+    async (
+      event,
+      {
+        order,
+        printerName,
+        copiesCount
+      }: { order: Order; printerName: string; copiesCount: number }
+    ) => {
       try {
         const templateOrder = new OrderTemplate(order)
-
         const couponHtml = templateOrder.execute()
 
-        const printWindow = new BrowserWindow({
-          show: false,
-          webPreferences: {
-            nodeIntegration: false,
-            contextIsolation: true
-          }
-        })
+        for (let i = 0; i < copiesCount; i++) {
+          await printHtml(couponHtml, printerName)
+          console.log(`Impressão ${i + 1}/${copiesCount} concluída`)
+        }
 
-        printWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(couponHtml)}`)
-
-        printWindow.webContents.on('did-finish-load', async () => {
-          try {
-            const printers = await printWindow.webContents.getPrintersAsync()
-
-            const targetPrinter = printers.find((p) => p.name === printerName)
-
-            if (!targetPrinter) {
-              console.error(`Erro: Impressora ${printerName} não encontrada.`)
-
-              event.sender.send('print-status', {
-                success: false,
-                error: 'Impressora não encontrada ou nome incorreto.'
-              })
-              printWindow.close()
-              return
-            }
-
-            printWindow.webContents.print({
-              silent: true,
-              printBackground: true,
-              deviceName: targetPrinter.name,
-              margins: {
-                marginType: 'none'
-              }
-            })
-
-            console.log('Cupom impresso com sucesso usando webContents.print()!')
-          } catch (printError) {
-            console.error('Erro ao imprimir com webContents.print():', printError)
-          } finally {
-            setTimeout(() => {
-              printWindow.close()
-            }, 1000)
-          }
-        })
+        event.sender.send('print-status', { success: true })
       } catch (error) {
-        console.error('Erro geral no processo de impressão (construção HTML/janela):', error)
+        console.error('Erro geral no processo de impressão:', error)
+        event.sender.send('print-status', { success: false, error: (error as any).message })
       }
     }
   )
@@ -140,6 +153,7 @@ app.whenReady().then(() => {
       printerWindow.loadURL('about:blank')
     })
   })
+
   createWindow()
 
   app.on('activate', function () {
