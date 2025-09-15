@@ -1,7 +1,7 @@
 {
   "name": "yeap-delivery",
   "productName": "Yeap Delivery",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Yeap Delivery é uma aplicação de entrega de encomendas.",
   "main": "./out/main/index.js",
   "author": "yeapdelivery.com.br",
@@ -31,7 +31,7 @@
     "@electron-toolkit/eslint-config-ts": "^3.0.0",
     "@electron-toolkit/tsconfig": "^1.0.1",
     "@types/node": "^22.14.1",
-    "electron": "21.0.0",
+    "electron": "^37.1.0",
     "electron-builder": "^25.1.8",
     "electron-vite": "^3.1.0",
     "eslint": "^9.24.0",

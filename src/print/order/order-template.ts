@@ -1,4 +1,4 @@
-import { DeliveryType, paymentMethodsMap } from '../../enums'
+import { DeliveryType, paymentMethodsMap, PaymentType } from '../../enums'
 import { Order } from '../../types'
 import {
   currencyWithOutSymbol,
@@ -115,6 +115,19 @@ export class OrderTemplate extends TemplatePrint {
     this.title('Resumo do Pedido')
     this.line('Quantidade de items: ' + this.order.products.length)
     this.line(`Forma de pagamento: ${paymentMethodsMap[this.order.paymentType]}`)
+
+    if (
+      this.order.change &&
+      this.order.change > 0 &&
+      this.order.paymentType === PaymentType.MONEY
+    ) {
+      this.line(`Troco para: ${currencyWithOutSymbol(this.order.change)}`)
+    }
+
+    if (this.order.change === 0 && this.order.paymentType === PaymentType.MONEY) {
+      this.line(`Troco para: Não precisa`)
+    }
+
     this.line(' ')
 
     this.line(`Subtotal: ${currencyWithOutSymbol(this.resolveSubtotal())}`)

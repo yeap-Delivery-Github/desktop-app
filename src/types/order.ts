@@ -30,6 +30,7 @@ export interface Order {
   paymentType: PaymentType
   createdAt: string
   updatedAt: string
+  change?: number
   couponCode?: string
   couponValue?: number
   discount?: number
