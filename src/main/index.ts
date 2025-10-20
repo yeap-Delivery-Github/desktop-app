@@ -47,6 +47,8 @@ function createWindow(): void {
   })
 
   mainWindow.loadURL('https://portal.yeapdelivery.com.br')
+
+  mainWindow.webContents.openDevTools()
 }
 
 async function printHtml(html: string, printerName: string): Promise<void> {
