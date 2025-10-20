@@ -5,7 +5,7 @@ import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { OrderTemplate } from '../print'
 import { Order } from '../types'
 
-function createWindow(): void {
+async function createWindow(): Promise<void> {
   const linuxIcon = join(__dirname, '../../build/icon.png')
   const windowsIcon = join(__dirname, 'resources', 'icon.png')
 
@@ -46,8 +46,7 @@ function createWindow(): void {
     return { action: 'deny' }
   })
 
-  mainWindow.loadURL('https://portal.yeapdelivery.com.br')
-
+  await mainWindow.loadURL('https://portal.yeapdelivery.com.br')
   mainWindow.webContents.openDevTools()
 }
 
