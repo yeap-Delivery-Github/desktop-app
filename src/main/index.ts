@@ -5,7 +5,7 @@ import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { OrderTemplate } from '../print'
 import { Order } from '../types'
 
-function createWindow(): void {
+async function createWindow(): Promise<Promise<void>> {
   const linuxIcon = join(__dirname, '../../build/icon.png')
   const windowsIcon = join(__dirname, 'resources', 'icon.png')
 
@@ -39,7 +39,7 @@ function createWindow(): void {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
-    mainWindow.webContents.openDevTools({ mode: 'detach' })
+    // mainWindow.webContents.openDevTools({ mode: 'detach' })
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -47,7 +47,8 @@ function createWindow(): void {
     return { action: 'deny' }
   })
 
-  mainWindow.loadURL('https://portal.yeapdelivery.com.br')
+  await mainWindow.webContents.session.clearCache()
+  await mainWindow.loadURL('https://portal.yeapdelivery.com.br')
 }
 
 async function printHtml(html: string, printerName: string): Promise<void> {
