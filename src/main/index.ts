@@ -2,8 +2,6 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import path, { join } from 'path'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
-import { OrderTemplate } from '../print'
-import { Order } from '../types'
 
 async function createWindow(): Promise<Promise<void>> {
   const linuxIcon = join(__dirname, '../../build/icon.png')
@@ -109,15 +107,12 @@ app.whenReady().then(() => {
     async (
       event,
       {
-        order,
+        couponHtml,
         printerName,
         copiesCount
-      }: { order: Order; printerName: string; copiesCount: number }
+      }: { couponHtml: string; printerName: string; copiesCount: number }
     ) => {
       try {
-        const templateOrder = new OrderTemplate(order)
-        const couponHtml = templateOrder.execute()
-
         for (let i = 0; i < copiesCount; i++) {
           await printHtml(couponHtml, printerName)
           console.log(`Impressão ${i + 1}/${copiesCount} concluída`)

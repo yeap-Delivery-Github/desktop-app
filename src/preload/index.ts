@@ -1,10 +1,9 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import { Order } from '../types'
 
 const api = {
   ping: () => ipcRenderer.send('ping'),
-  printOrder: (printerEvent: { order: Order; printerName: string; copiesCount: number }) =>
+  printOrder: (printerEvent: { couponHtml: string; printerName: string; copiesCount: number }) =>
     ipcRenderer.send('print-order', printerEvent),
   getPrinters: () => ipcRenderer.invoke('get-printers')
 }
