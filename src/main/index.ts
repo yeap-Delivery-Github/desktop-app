@@ -50,7 +50,7 @@ function createWindow(): void {
 async function printHtml(html: string, printerName: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const printWindow = new BrowserWindow({
-      show: true,
+      show: false,
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true
