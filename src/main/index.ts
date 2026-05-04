@@ -1,7 +1,29 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, safeStorage } from 'electron'
+import fs from 'fs'
 import path, { join } from 'path'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
+
+const TOKEN_FILE = path.join(app.getPath('userData'), 'auth-token.bin')
+
+function saveToken(token: string): void {
+  const encrypted = safeStorage.encryptString(token)
+  fs.writeFileSync(TOKEN_FILE, encrypted)
+}
+
+function getToken(): string | null {
+  try {
+    if (!fs.existsSync(TOKEN_FILE)) return null
+    const data = fs.readFileSync(TOKEN_FILE)
+    return safeStorage.decryptString(data)
+  } catch {
+    return null
+  }
+}
+
+function deleteToken(): void {
+  if (fs.existsSync(TOKEN_FILE)) fs.unlinkSync(TOKEN_FILE)
+}
 
 async function createWindow(): Promise<Promise<void>> {
   const linuxIcon = join(__dirname, '../../build/icon.png')
@@ -45,8 +67,7 @@ async function createWindow(): Promise<Promise<void>> {
     return { action: 'deny' }
   })
 
-  await mainWindow.webContents.session.clearCache()
-  await mainWindow.loadURL('https://portal.yeapdelivery.com.br')
+  await mainWindow.loadURL('http://localhost:3000')
 }
 
 async function printHtml(html: string, printerName: string): Promise<void> {
@@ -101,6 +122,10 @@ app.whenReady().then(() => {
   })
 
   ipcMain.on('ping', () => console.log('pong'))
+
+  ipcMain.handle('save-token', (_, token: string) => saveToken(token))
+  ipcMain.handle('get-token', () => getToken())
+  ipcMain.handle('delete-token', () => deleteToken())
 
   ipcMain.on(
     'print-order',
