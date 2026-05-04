@@ -67,7 +67,7 @@ async function createWindow(): Promise<Promise<void>> {
     return { action: 'deny' }
   })
 
-  await mainWindow.loadURL('http://localhost:3000')
+  await mainWindow.loadURL('https://portal.yeapdelivery.com.br')
 }
 
 async function printHtml(html: string, printerName: string): Promise<void> {
