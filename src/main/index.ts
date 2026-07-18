@@ -151,6 +151,33 @@ app.whenReady().then(() => {
     }
   )
 
+  ipcMain.on(
+    'print-kitchen-order',
+    async (
+      event,
+      {
+        couponHtml,
+        printerName,
+        copiesCount
+      }: { couponHtml: string; printerName: string; copiesCount: number }
+    ) => {
+      try {
+        for (let i = 0; i < copiesCount; i++) {
+          await printHtml(couponHtml, printerName)
+          console.log(`Impressão comanda cozinha ${i + 1}/${copiesCount} concluída`)
+        }
+
+        event.sender.send('print-kitchen-status', { success: true })
+      } catch (error) {
+        console.error('Erro geral no processo de impressão da comanda:', error)
+        event.sender.send('print-kitchen-status', {
+          success: false,
+          error: (error as any).message
+        })
+      }
+    }
+  )
+
   ipcMain.handle('get-printers', async () => {
     return new Promise<string[]>((resolve, reject) => {
       const printerWindow = new BrowserWindow({
