@@ -5,6 +5,13 @@ import path, { join } from 'path'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 
 const TOKEN_FILE = path.join(app.getPath('userData'), 'auth-token.bin')
+const LOG_FILE = path.join(app.getPath('userData'), 'app.log')
+
+function log(message: string): void {
+  const line = `[${new Date().toISOString()}] ${message}\n`
+  console.log(message)
+  fs.appendFileSync(LOG_FILE, line)
+}
 
 function saveToken(token: string): void {
   const encrypted = safeStorage.encryptString(token)
@@ -58,6 +65,7 @@ async function createWindow(): Promise<Promise<void>> {
   }
 
   mainWindow.on('ready-to-show', () => {
+    log('ready-to-show: exibindo janela principal')
     mainWindow.show()
     // mainWindow.webContents.openDevTools({ mode: 'detach' })
   })
@@ -67,7 +75,29 @@ async function createWindow(): Promise<Promise<void>> {
     return { action: 'deny' }
   })
 
-  await mainWindow.loadURL('https://portal.yeapdelivery.com.br')
+  mainWindow.webContents.on(
+    'did-fail-load',
+    (_event, errorCode, errorDescription, validatedURL) => {
+      log(`did-fail-load: ${validatedURL} - ${errorDescription} (${errorCode})`)
+      if (!mainWindow.isVisible()) mainWindow.show()
+    }
+  )
+
+  mainWindow.webContents.on('render-process-gone', (_event, details) => {
+    log(`render-process-gone: reason=${details.reason} exitCode=${details.exitCode}`)
+  })
+
+  mainWindow.webContents.on('unresponsive', () => {
+    log('webContents unresponsive')
+  })
+
+  try {
+    log('Carregando https://portal.yeapdelivery.com.br')
+    await mainWindow.loadURL('https://portal.yeapdelivery.com.br')
+  } catch (error) {
+    log(`Erro ao carregar o portal: ${(error as Error).message}`)
+    if (!mainWindow.isVisible()) mainWindow.show()
+  }
 }
 
 async function printHtml(html: string, printerName: string): Promise<void> {
@@ -114,7 +144,10 @@ async function printHtml(html: string, printerName: string): Promise<void> {
   })
 }
 
+app.disableHardwareAcceleration()
+
 app.whenReady().then(() => {
+  log(`App pronto - Electron ${process.versions.electron}, Chrome ${process.versions.chrome}`)
   electronApp.setAppUserModelId('com.electron')
 
   app.on('browser-window-created', (_, window) => {
