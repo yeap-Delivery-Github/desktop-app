@@ -6,7 +6,8 @@ import icon from '../../resources/icon.png?asset'
 import { log } from './logger'
 import { printDocument, printLegacyHtml } from './printing'
 
-const PORTAL_URL = 'https://portal.yeapdelivery.com.br'
+const DEFAULT_PORTAL_URL = 'https://portal.yeapdelivery.com.br'
+const PORTAL_URL = resolvePortalUrl(process.env.YEAP_PORTAL_URL)
 
 const TOKEN_FILE = path.join(app.getPath('userData'), 'auth-token.bin')
 
@@ -78,7 +79,7 @@ async function createWindow(): Promise<Promise<void>> {
   })
 
   try {
-    log('info', 'portal.loading')
+    log('info', 'portal.loading', { origin: originOf(PORTAL_URL) })
     await mainWindow.loadURL(PORTAL_URL)
   } catch (error) {
     log('error', 'portal.load_failed', { error: (error as Error).message })
@@ -97,6 +98,23 @@ function registerPrintChannel(channel: string, statusChannel: string): void {
     }
     if (!event.sender.isDestroyed()) event.sender.send(statusChannel, status)
   })
+}
+
+function resolvePortalUrl(override: string | undefined): string {
+  if (!override) return DEFAULT_PORTAL_URL
+
+  try {
+    const url = new URL(override)
+    const isLocalhost = url.hostname === 'localhost' || url.hostname === '127.0.0.1'
+    if (url.protocol === 'https:' || (url.protocol === 'http:' && isLocalhost)) {
+      return url.toString()
+    }
+  } catch {
+    // falls through to the default below
+  }
+
+  log('warn', 'portal.invalid_url_override')
+  return DEFAULT_PORTAL_URL
 }
 
 function originOf(url: string | undefined): string | null {

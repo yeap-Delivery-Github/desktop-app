@@ -17,7 +17,7 @@ npm test             # Vitest (pure printing modules: contract, escpos, codepage
 
 ## Architecture
 
-This is an Electron app built with `electron-vite`. The main window loads a remote web app (`https://portal.yeapdelivery.com.br`) — there is no local renderer UI beyond a stub. The desktop app exists to provide native printing capabilities to that web app.
+This is an Electron app built with `electron-vite`. The main window loads a remote web app (`https://portal.yeapdelivery.com.br`, overridable with the `YEAP_PORTAL_URL` env var for staging/local testing — only `https:` or `http://localhost`; invalid values fall back to production and log `portal.invalid_url_override`. The same origin gates the `print-document` IPC) — there is no local renderer UI beyond a stub. The desktop app exists to provide native printing capabilities to that web app.
 
 **Three-process model:**
 
