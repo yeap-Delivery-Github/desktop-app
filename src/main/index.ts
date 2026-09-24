@@ -1,18 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { app, shell, BrowserWindow, ipcMain, safeStorage } from 'electron'
 import fs from 'fs'
 import path, { join } from 'path'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { log } from './logger'
+import { enqueuePrint, parsePrintJob } from './printer'
 
 const TOKEN_FILE = path.join(app.getPath('userData'), 'auth-token.bin')
-const LOG_FILE = path.join(app.getPath('userData'), 'app.log')
-
-function log(message: string): void {
-  const line = `[${new Date().toISOString()}] ${message}\n`
-  console.log(message)
-  fs.appendFileSync(LOG_FILE, line)
-}
 
 function saveToken(token: string): void {
   const encrypted = safeStorage.encryptString(token)
@@ -52,7 +46,7 @@ async function createWindow(): Promise<Promise<void>> {
   }
 
   mainWindow.on('ready-to-show', () => {
-    log('ready-to-show: exibindo janela principal')
+    log('info', 'window.ready_to_show')
     mainWindow.show()
     // mainWindow.webContents.openDevTools({ mode: 'detach' })
   })
@@ -65,76 +59,51 @@ async function createWindow(): Promise<Promise<void>> {
   mainWindow.webContents.on(
     'did-fail-load',
     (_event, errorCode, errorDescription, validatedURL) => {
-      log(`did-fail-load: ${validatedURL} - ${errorDescription} (${errorCode})`)
+      log('error', 'window.load_failed', { url: validatedURL, errorCode, errorDescription })
       if (!mainWindow.isVisible()) mainWindow.show()
     }
   )
 
   mainWindow.webContents.on('render-process-gone', (_event, details) => {
-    log(`render-process-gone: reason=${details.reason} exitCode=${details.exitCode}`)
+    log('error', 'window.render_process_gone', {
+      reason: details.reason,
+      exitCode: details.exitCode
+    })
   })
 
   mainWindow.webContents.on('unresponsive', () => {
-    log('webContents unresponsive')
+    log('warn', 'window.unresponsive')
   })
 
   try {
-    log('Carregando https://portal.yeapdelivery.com.br')
+    log('info', 'portal.loading')
     await mainWindow.loadURL('https://portal.yeapdelivery.com.br')
   } catch (error) {
-    log(`Erro ao carregar o portal: ${(error as Error).message}`)
+    log('error', 'portal.load_failed', { error: (error as Error).message })
     if (!mainWindow.isVisible()) mainWindow.show()
   }
 }
 
-async function printHtml(html: string, printerName: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const printWindow = new BrowserWindow({
-      show: false,
-      webPreferences: {
-        nodeIntegration: false,
-        contextIsolation: true
-      }
-    })
-
-    printWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`)
-
-    printWindow.webContents.once('did-finish-load', async () => {
-      try {
-        const printers = await printWindow.webContents.getPrintersAsync()
-        const targetPrinter = printers.find((p) => p.name === printerName)
-
-        if (!targetPrinter) {
-          reject(new Error(`Impressora ${printerName} não encontrada`))
-          printWindow.close()
-          return
-        }
-
-        printWindow.webContents.print(
-          {
-            silent: true,
-            printBackground: true,
-            deviceName: targetPrinter.name,
-            margins: { marginType: 'none' }
-          },
-          (success) => {
-            printWindow.close()
-            if (!success) return reject(new Error('Falha na impressão'))
-            resolve()
-          }
-        )
-      } catch (err) {
-        reject(err)
-        printWindow.close()
-      }
-    })
+function registerPrintChannel(channel: string, statusChannel: string): void {
+  ipcMain.on(channel, async (event, payload: unknown) => {
+    let status: { success: boolean; error?: string }
+    try {
+      await enqueuePrint(parsePrintJob(payload))
+      status = { success: true }
+    } catch (error) {
+      status = { success: false, error: (error as Error).message }
+    }
+    if (!event.sender.isDestroyed()) event.sender.send(statusChannel, status)
   })
 }
 
 app.disableHardwareAcceleration()
 
 app.whenReady().then(() => {
-  log(`App pronto - Electron ${process.versions.electron}, Chrome ${process.versions.chrome}`)
+  log('info', 'app.ready', {
+    electron: process.versions.electron,
+    chrome: process.versions.chrome
+  })
   electronApp.setAppUserModelId('com.electron')
 
   app.on('browser-window-created', (_, window) => {
@@ -147,80 +116,12 @@ app.whenReady().then(() => {
   ipcMain.handle('get-token', () => getToken())
   ipcMain.handle('delete-token', () => deleteToken())
 
-  ipcMain.on(
-    'print-order',
-    async (
-      event,
-      {
-        couponHtml,
-        printerName,
-        copiesCount
-      }: { couponHtml: string; printerName: string; copiesCount: number }
-    ) => {
-      try {
-        for (let i = 0; i < copiesCount; i++) {
-          await printHtml(couponHtml, printerName)
-          console.log(`Impressão ${i + 1}/${copiesCount} concluída`)
-        }
+  registerPrintChannel('print-order', 'print-status')
+  registerPrintChannel('print-kitchen-order', 'print-kitchen-status')
 
-        event.sender.send('print-status', { success: true })
-      } catch (error) {
-        console.error('Erro geral no processo de impressão:', error)
-        event.sender.send('print-status', { success: false, error: (error as any).message })
-      }
-    }
-  )
-
-  ipcMain.on(
-    'print-kitchen-order',
-    async (
-      event,
-      {
-        couponHtml,
-        printerName,
-        copiesCount
-      }: { couponHtml: string; printerName: string; copiesCount: number }
-    ) => {
-      try {
-        for (let i = 0; i < copiesCount; i++) {
-          await printHtml(couponHtml, printerName)
-          console.log(`Impressão comanda cozinha ${i + 1}/${copiesCount} concluída`)
-        }
-
-        event.sender.send('print-kitchen-status', { success: true })
-      } catch (error) {
-        console.error('Erro geral no processo de impressão da comanda:', error)
-        event.sender.send('print-kitchen-status', {
-          success: false,
-          error: (error as any).message
-        })
-      }
-    }
-  )
-
-  ipcMain.handle('get-printers', async () => {
-    return new Promise<string[]>((resolve, reject) => {
-      const printerWindow = new BrowserWindow({
-        show: false,
-        webPreferences: {
-          nodeIntegration: false,
-          contextIsolation: true
-        }
-      })
-
-      printerWindow.webContents.once('did-finish-load', async () => {
-        try {
-          const printers = await printerWindow.webContents.getPrintersAsync()
-          resolve(printers.map((p) => p.name))
-        } catch (error) {
-          reject(error)
-        } finally {
-          printerWindow.close()
-        }
-      })
-
-      printerWindow.loadURL('about:blank')
-    })
+  ipcMain.handle('get-printers', async (event) => {
+    const printers = await event.sender.getPrintersAsync()
+    return printers.map((p) => p.name)
   })
 
   createWindow()
