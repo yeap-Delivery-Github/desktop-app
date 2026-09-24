@@ -17,7 +17,9 @@ npm test             # Vitest (pure printing modules: contract, escpos, codepage
 
 ## Architecture
 
-This is an Electron app built with `electron-vite`. The main window loads a remote web app (`https://portal.yeapdelivery.com.br`; the default can be baked at build time with `MAIN_VITE_PORTAL_URL` and overridden at runtime with the `YEAP_PORTAL_URL` env var for staging/local testing — only `https:` or `http://localhost`; invalid values fall back to production and log `portal.invalid_url_override`. The same origin gates the `print-document` IPC) — there is no local renderer UI beyond a stub. The desktop app exists to provide native printing capabilities to that web app.
+This is an Electron app built with `electron-vite`. The main window loads a remote web app (the portal) — there is no local renderer UI beyond a stub. The desktop app exists to provide native printing capabilities to that web app.
+
+**Portal URL:** the code default is the **test** portal (`https://test-portal.yeapdelivery.com.br`). `release.yml` bakes production (`https://portal.yeapdelivery.com.br`) at build time via `MAIN_VITE_PORTAL_URL` — never publish an installer built without it. At runtime, `YEAP_PORTAL_URL` overrides it (only `https:` or `http://localhost`; invalid values fall back to the built-in default and log `portal.invalid_url_override`). The same origin gates the `print-document` IPC.
 
 **Three-process model:**
 
@@ -56,6 +58,6 @@ Legacy payload (`print-order`/`print-kitchen-order`): `{ couponHtml, printerName
 
 **Supported platform:** Windows 10+ x64. Windows 7 support was dropped, which unpinned Electron from 21 (last line supporting Win7 was 22). Development requires Node >= 22.12 (Electron install requirement).
 
-**CI:** `release.yml` builds and publishes the Windows installer on `v*` tags (Windows only). `build-test.yml` builds a Windows installer pointing to `https://test-portal.yeapdelivery.com.br` on `test-*` tags and uploads it as a workflow artifact (same appId as production, so it replaces the installed app).
+**CI:** `release.yml` builds and publishes the Windows installer on `v*` tags (Windows only). `build-test.yml` builds a Windows installer pointing to the test portal on `test-*` tags and uploads it as a workflow artifact (same appId as production, so it replaces the installed app).
 
 **Build output:** `electron-vite build` compiles to `out/`. Main-process assets live in `resources/` (electron-vite public dir) and are imported with the `?asset` suffix; electron-builder packages that folder (`asarUnpack: resources/**`).

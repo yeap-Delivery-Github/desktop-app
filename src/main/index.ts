@@ -6,10 +6,9 @@ import icon from '../../resources/icon.png?asset'
 import { log } from './logger'
 import { printDocument, printLegacyHtml } from './printing'
 
-const DEFAULT_PORTAL_URL = 'https://portal.yeapdelivery.com.br'
-const PORTAL_URL = resolvePortalUrl(
-  process.env.YEAP_PORTAL_URL || import.meta.env.MAIN_VITE_PORTAL_URL
-)
+const DEFAULT_PORTAL_URL =
+  import.meta.env.MAIN_VITE_PORTAL_URL || 'https://test-portal.yeapdelivery.com.br'
+const PORTAL_URL = resolvePortalUrl(process.env.YEAP_PORTAL_URL)
 
 const TOKEN_FILE = path.join(app.getPath('userData'), 'auth-token.bin')
 
