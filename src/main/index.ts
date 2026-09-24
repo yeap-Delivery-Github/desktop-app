@@ -4,7 +4,9 @@ import path, { join } from 'path'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { log } from './logger'
-import { enqueuePrint, parsePrintJob } from './printer'
+import { printDocument, printLegacyHtml } from './printing'
+
+const PORTAL_URL = 'https://portal.yeapdelivery.com.br'
 
 const TOKEN_FILE = path.join(app.getPath('userData'), 'auth-token.bin')
 
@@ -77,7 +79,7 @@ async function createWindow(): Promise<Promise<void>> {
 
   try {
     log('info', 'portal.loading')
-    await mainWindow.loadURL('https://portal.yeapdelivery.com.br')
+    await mainWindow.loadURL(PORTAL_URL)
   } catch (error) {
     log('error', 'portal.load_failed', { error: (error as Error).message })
     if (!mainWindow.isVisible()) mainWindow.show()
@@ -88,13 +90,21 @@ function registerPrintChannel(channel: string, statusChannel: string): void {
   ipcMain.on(channel, async (event, payload: unknown) => {
     let status: { success: boolean; error?: string }
     try {
-      await enqueuePrint(parsePrintJob(payload))
+      await printLegacyHtml(payload)
       status = { success: true }
     } catch (error) {
       status = { success: false, error: (error as Error).message }
     }
     if (!event.sender.isDestroyed()) event.sender.send(statusChannel, status)
   })
+}
+
+function originOf(url: string | undefined): string | null {
+  try {
+    return url ? new URL(url).origin : null
+  } catch {
+    return null
+  }
 }
 
 app.disableHardwareAcceleration()
@@ -118,6 +128,15 @@ app.whenReady().then(() => {
 
   registerPrintChannel('print-order', 'print-status')
   registerPrintChannel('print-kitchen-order', 'print-kitchen-status')
+
+  ipcMain.handle('print-document', (event, payload: unknown) => {
+    const origin = originOf(event.senderFrame?.url)
+    if (origin !== originOf(PORTAL_URL)) {
+      log('warn', 'print.forbidden_sender', { origin })
+      return { success: false, error: 'Origem não autorizada' }
+    }
+    return printDocument(payload)
+  })
 
   ipcMain.handle('get-printers', async (event) => {
     const printers = await event.sender.getPrintersAsync()
