@@ -38,4 +38,6 @@ This is an Electron app built with `electron-vite`. The main window loads a remo
 
 **Shared code (`src/`):** Types (`src/types/order.ts`), enums (`src/enums/`), and formatting utilities (`src/utils/`) are shared across processes. These model the `Order` domain (products, variations, addresses, payment/delivery types).
 
-**Build output:** `electron-vite build` compiles to `out/`. Static resources (icons) are copied from `resources/` to `out/main/resources/` via `vite-plugin-static-copy`.
+**Supported platform:** Windows 10+ x64. Windows 7 support was dropped, which unpinned Electron from 21 (last line supporting Win7 was 22). Development requires Node >= 22.12 (Electron install requirement).
+
+**Build output:** `electron-vite build` compiles to `out/`. Main-process assets live in `resources/` (electron-vite public dir) and are imported with the `?asset` suffix; electron-builder packages that folder (`asarUnpack: resources/**`).

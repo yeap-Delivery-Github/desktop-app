@@ -3,6 +3,7 @@ import { app, shell, BrowserWindow, ipcMain, safeStorage } from 'electron'
 import fs from 'fs'
 import path, { join } from 'path'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
+import icon from '../../resources/icon.png?asset'
 
 const TOKEN_FILE = path.join(app.getPath('userData'), 'auth-token.bin')
 const LOG_FILE = path.join(app.getPath('userData'), 'app.log')
@@ -33,26 +34,13 @@ function deleteToken(): void {
 }
 
 async function createWindow(): Promise<Promise<void>> {
-  const linuxIcon = join(__dirname, '../../build/icon.png')
-  const windowsIcon = join(__dirname, 'resources', 'icon.png')
-
-  let icon = ''
-
-  if (process.platform === 'linux') {
-    icon = linuxIcon
-  }
-
-  if (process.platform === 'win32') {
-    icon = windowsIcon
-  }
-
   const mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
     show: false,
     autoHideMenuBar: true,
     title: 'Yeap Delivery',
-    icon: icon,
+    icon,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
@@ -60,8 +48,7 @@ async function createWindow(): Promise<Promise<void>> {
   })
 
   if (process.platform === 'darwin') {
-    const iconPath = path.resolve(__dirname, 'resources', 'icon.png')
-    app.dock?.setIcon(iconPath)
+    app.dock?.setIcon(icon)
   }
 
   mainWindow.on('ready-to-show', () => {
