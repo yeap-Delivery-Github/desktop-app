@@ -58,6 +58,6 @@ Legacy payload (`print-order`/`print-kitchen-order`): `{ couponHtml, printerName
 
 **Supported platform:** Windows 10+ x64. Windows 7 support was dropped, which unpinned Electron from 21 (last line supporting Win7 was 22). Development requires Node >= 22.12 (Electron install requirement).
 
-**CI:** `release.yml` builds and publishes the Windows installer on `v*` tags (Windows only). `build-test.yml` builds a Windows installer pointing to the test portal on `test-*` tags and uploads it as a workflow artifact (same appId as production, so it replaces the installed app).
+**CI:** `release.yml` builds and publishes the Windows installer on `v*` tags (Windows only). `build-test.yml` builds a Windows installer pointing to the test portal on `test-*` tags and publishes it as a GitHub pre-release on that tag (same appId as production, so it replaces the installed app).
 
 **Build output:** `electron-vite build` compiles to `out/`. Main-process assets live in `resources/` (electron-vite public dir) and are imported with the `?asset` suffix; electron-builder packages that folder (`asarUnpack: resources/**`).
