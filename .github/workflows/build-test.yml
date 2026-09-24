@@ -1,0 +1,43 @@
+name: build-test
+
+# Windows installer pointing to the test portal, published as a workflow artifact (not a release).
+# Trigger: push a tag starting with "test-" (e.g. test-1.1.0-1) or run manually from the default branch.
+on:
+  push:
+    tags: ["test-*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      MAIN_VITE_PORTAL_URL: https://test-portal.yeapdelivery.com.br
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test
+        run: npm test
+
+      - name: Build installer
+        run: npm run build && npx electron-builder --win --publish never
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: yeap-delivery-test-setup
+          path: dist/*-setup.exe
+          retention-days: 14
